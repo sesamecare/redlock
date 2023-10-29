@@ -1,0 +1,67 @@
+{
+  "name": "@sesamecare-oss/redlock",
+  "version": "0.0.0",
+  "description": "",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "author": "Developers <developers@sesamecare.com>",
+  "license": "UNLICENSED",
+  "packageManager": "yarn@4.0.1",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "yarn dlx rimraf ./dist",
+    "lint": "eslint .",
+    "postinstall": "coconfig",
+    "test": "vitest"
+  },
+  "keywords": [
+    "typescript",
+    "sesame"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sesamecare/redlock.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/exec",
+        {
+          "publishCmd": "yarn dlx pinst --disable"
+        }
+      ],
+      "@semantic-release/npm",
+      "@semantic-release/github"
+    ]
+  },
+  "config": {
+    "coconfig": "@openapi-typescript-infra/coconfig"
+  },
+  "devDependencies": {
+    "@openapi-typescript-infra/coconfig": "^4.2.2",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/github": "^9.2.1",
+    "@types/node": "^20.8.9",
+    "@typescript-eslint/eslint-plugin": "^6.9.0",
+    "@typescript-eslint/parser": "^6.9.0",
+    "coconfig": "^1.0.0",
+    "eslint": "^8.52.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.0",
+    "typescript": "^5.2.2",
+    "vitest": "^0.34.6"
+  },
+  "dependencies": {
+    "ioredis": "^5.3.2",
+    "node-abort-controller": "^3.1.1"
+  }
+}

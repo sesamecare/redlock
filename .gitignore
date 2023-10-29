@@ -1,0 +1,67 @@
+# Custom
+src/generated
+.transpiled
+.nyc_output
+.eslintcache
+
+# TypeScript incremental compilation cache
+*.tsbuildinfo
+
+# Stock
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+*.orig
+
+work
+/build
+pids
+logs
+results
+coverage
+lib-cov
+html-report
+xunit.xml
+node_modules
+npm-debug.log
+
+.project
+.idea
+.settings
+.iml
+*.sublime-workspace
+*.sublime-project
+
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+.node_repl_history
+
+# TypeScript incremental compilation cache
+*.tsbuildinfo
+# Added by coconfig
+.eslintignore
+.npmignore
+tsconfig.json
+tsconfig.build.json
+.prettierrc.js
+.eslintrc.js
+.commitlintrc.json
+vitest.config.ts

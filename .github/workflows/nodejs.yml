@@ -1,0 +1,79 @@
+name: Node build, test and publish
+
+on:
+  pull_request:
+    types: [assigned, opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup stale actions
+        uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: $
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js 18
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+        cache: yarn
+    - name: Start Redis
+      run: |
+        docker run \
+          --name 'redis' \
+          --health-cmd "redis-cli ping" \
+          --health-interval 10s \
+          --health-timeout 5s \
+          --health-retries 5 \
+          -p 6379:6379 \
+          -d redis
+    - name: Add docker container cleanup
+      uses: webiny/action-post-run@3.0.0
+      id: post-run-command
+      with:
+        run: |
+          docker rm -f redis
+
+    - name: npm install, lint, build, and test
+      run: |
+        yarn install --immutable
+        yarn lint
+        yarn build
+        yarn test
+      env:
+        CI: true
+
+  publish-npm:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      issues: write
+      id-token: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: yarn
+      - run: yarn install --immutable
+      - run: yarn build
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.SESAMECARE_OSS_NPM_TOKEN }}
+        run: |
+          yarn dlx semantic-release
