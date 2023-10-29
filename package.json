@@ -1,7 +1,7 @@
 {
   "name": "@sesamecare-oss/redlock",
   "version": "0.0.0",
-  "description": "",
+  "description": "A modern node.js redlock implementation for distributed redis locks",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "author": "Developers <developers@sesamecare.com>",
