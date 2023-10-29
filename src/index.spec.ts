@@ -42,7 +42,9 @@ describe.each([
   // { type: 'cluster' },
 ])('$type', ({ type }) => {
   const redis =
-    type === 'instance' ? new Redis({ host: '127.0.0.1' }) : new Cluster([{ host: 'localhost' }]);
+    type === 'instance'
+      ? new Redis({ host: 'redis-single-instance' })
+      : new Cluster([{ host: 'redis-single-cluster-1' }]);
 
   beforeEach(async () => {
     await (redis instanceof Cluster && redis.isCluster ? waitForCluster(redis) : null);
