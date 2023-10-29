@@ -35,21 +35,18 @@ jobs:
       working-directory: ./.github/docker
       run: docker-compose pull
       continue-on-error: true
-    - name: Add docker container cleanup
-      uses: webiny/action-post-run@3.0.0
-      id: post-run-command
-      with:
-        run: |
-          docker rm -f redis
-
     - name: Lint the source
+      working-directory: ./.github/docker
       run: docker compose run --rm --no-TTY builder yarn lint
     - name: Transpile into dist
+      working-directory: ./.github/docker
       run: docker compose run --rm --no-TTY builder yarn build
     - name: Run tests
+      working-directory: ./.github/docker
       run: docker compose run --rm --no-TTY runner yarn test
     - name: Stop containers
       if: always()
+      working-directory: ./.github/docker
       run: docker compose down
 
   publish-npm:
