@@ -243,7 +243,7 @@ services:
       - installer
     image: node:20
     working_dir: /workspace
-    entrypoint: ./scripts/await.sh node_modules/.bin/tsc
+    entrypoint: ./.github/docker/await.sh node_modules/.bin/tsc
     command: yarn build:development
     tty: true
     environment:
@@ -285,7 +285,7 @@ services:
       - redis-multi-cluster-c
     image: node:20
     working_dir: /workspace
-    entrypoint: ./scripts/await.sh node_modules/.bin/ava ./scripts/await.sh dist/esm/index.js
+    entrypoint: ./.github/docker/await.sh node_modules/.bin/vitest ./.github/docker/await.sh build/index.js
     command: yarn test:development
     tty: true
     environment:
