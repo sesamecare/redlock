@@ -1,4 +1,4 @@
-[![Continuous Integration](https://github.com/sesamecare/redlock/workflows/nodejs/badge.svg)](https://github.com/sesamecare/redlock/actions/workflows/nodejs.yml?query=branch%3Amain++)
+[![Node build, test and publish](https://github.com/sesamecare/redlock/actions/workflows/nodejs.yml/badge.svg)](https://github.com/sesamecare/redlock/actions/workflows/nodejs.yml)
 [![Current Version](https://badgen.net/npm/v/@sesamecare-oss/redlock)](https://npm.im/@sesamecare-oss/redlock)
 [![Supported Node.js Versions](https://badgen.net/npm/node/@sesamecare-oss/redlock)](https://npm.im/@sesamecare-oss/redlock)
 
