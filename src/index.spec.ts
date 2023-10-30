@@ -5,7 +5,7 @@ import { ExecutionError, Redlock, ResourceLockedError } from './index';
 
 async function waitForCluster(redis: Cluster): Promise<void> {
   async function checkIsReady(): Promise<boolean> {
-    return (await redis.info()).match(/^cluster_state:(.+)$/m)?.[1] === 'ok';
+    return (await redis.cluster('INFO')).match(/^cluster_state:(.+)$/m)?.[1] === 'ok';
   }
 
   let isReady = await checkIsReady();
@@ -38,8 +38,7 @@ function is<T>(actual: T, expected: T, message?: string): void {
 
 describe.each([
   { type: 'instance' },
-  // TODO fix cluster testing
-  // { type: 'cluster' },
+  { type: 'cluster' },
 ])('$type', ({ type }) => {
   const redis =
     type === 'instance'
