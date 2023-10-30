@@ -224,7 +224,7 @@ services:
 
   # This container installs node modules into the node_modules volume.
   installer:
-    image: node:20
+    image: "node:${NODE_VERSION}"
     working_dir: /workspace
     command: yarn install --immutable
     environment:
@@ -241,7 +241,7 @@ services:
   builder:
     depends_on:
       - installer
-    image: node:20
+    image: "node:${NODE_VERSION}"
     working_dir: /workspace
     entrypoint: ./.github/docker/await.sh node_modules/.bin/tsc
     command: yarn build:development
@@ -283,7 +283,7 @@ services:
       - redis-multi-cluster-c-2
       - redis-multi-cluster-c-3
       - redis-multi-cluster-c
-    image: node:20
+    image: "node:${NODE_VERSION}"
     working_dir: /workspace
     entrypoint: ./.github/docker/await.sh node_modules/.bin/vitest ./.github/docker/await.sh build/index.js
     command: yarn test:development

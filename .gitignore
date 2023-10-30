@@ -55,7 +55,6 @@ Thumbs.db
 .node_repl_history
 
 # TypeScript incremental compilation cache
-*.tsbuildinfo
 # Added by coconfig
 .eslintignore
 .npmignore

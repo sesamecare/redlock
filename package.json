@@ -18,6 +18,9 @@
     "typescript",
     "sesame"
   ],
+  "engines": {
+    "node": ">=16"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sesamecare/redlock.git"
@@ -49,7 +52,7 @@
     "@openapi-typescript-infra/coconfig": "^4.2.2",
     "@semantic-release/exec": "^6.0.3",
     "@semantic-release/github": "^9.2.1",
-    "@types/node": "^20.8.9",
+    "@types/node": "16.18.60",
     "@typescript-eslint/eslint-plugin": "^6.9.0",
     "@typescript-eslint/parser": "^6.9.0",
     "coconfig": "^1.0.0",
@@ -57,11 +60,11 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.0",
+    "ioredis": "^5.3.2",
     "typescript": "^5.2.2",
     "vitest": "^0.34.6"
   },
-  "dependencies": {
-    "ioredis": "^5.3.2",
-    "node-abort-controller": "^3.1.1"
+  "peerDependencies": {
+    "ioredis": ">=5"
   }
 }
