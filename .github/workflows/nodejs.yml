@@ -24,40 +24,43 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [ 16, 18, 20 ]
+        node-version: [16, 18, 20]
+
+    env:
+      YARN_IGNORE_NODE: 1
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: yarn
-    - name: Enable docker layer cache
-      uses: satackey/action-docker-layer-caching@v0.0.11
-      continue-on-error: true
-    - name: Pull docker images
-      run: docker-compose pull
-      continue-on-error: true
-      env:
-        NODE_VERSION: ${{ matrix.node-version }}
-    - name: Lint the source
-      run: docker compose run --rm --no-TTY builder yarn lint
-      env:
-        NODE_VERSION: ${{ matrix.node-version }}
-    - name: Transpile into dist
-      run: docker compose run --rm --no-TTY builder yarn build
-      env:
-        NODE_VERSION: ${{ matrix.node-version }}
-    - name: Run tests
-      run: docker compose run --rm --no-TTY runner yarn test
-      env:
-        NODE_VERSION: ${{ matrix.node-version }}
-    - name: Stop containers
-      if: always()
-      run: docker compose down
-      env:
-        NODE_VERSION: ${{ matrix.node-version }}
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: yarn
+      - name: Enable docker layer cache
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+      - name: Pull docker images
+        run: docker-compose pull
+        continue-on-error: true
+        env:
+          NODE_VERSION: ${{ matrix.node-version }}
+      - name: Lint the source
+        run: docker compose run --rm --no-TTY builder yarn lint
+        env:
+          NODE_VERSION: ${{ matrix.node-version }}
+      - name: Transpile into dist
+        run: docker compose run --rm --no-TTY builder yarn build
+        env:
+          NODE_VERSION: ${{ matrix.node-version }}
+      - name: Run tests
+        run: docker compose run --rm --no-TTY runner yarn test
+        env:
+          NODE_VERSION: ${{ matrix.node-version }}
+      - name: Stop containers
+        if: always()
+        run: docker compose down
+        env:
+          NODE_VERSION: ${{ matrix.node-version }}
 
   publish-npm:
     needs: build
