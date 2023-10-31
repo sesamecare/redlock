@@ -229,6 +229,7 @@ services:
     command: yarn install --immutable
     environment:
       NODE_ENV: development
+      YARN_IGNORE_NODE: 1
     volumes:
       - type: bind
         source: .
