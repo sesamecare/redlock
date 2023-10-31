@@ -1,10 +1,7 @@
 import { randomBytes, createHash } from 'crypto';
 import { EventEmitter } from 'events';
 
-// AbortController became available as a global in node version 16. Once version
-// 14 reaches its end-of-life, this can be removed.
-import { AbortController as PolyfillAbortController } from 'node-abort-controller';
-import { Redis as IORedisClient, Cluster as IORedisCluster } from 'ioredis';
+import type { Redis as IORedisClient, Cluster as IORedisCluster } from 'ioredis';
 
 import { ensureCommands } from './scripts';
 
@@ -282,15 +279,13 @@ export class Redlock extends EventEmitter {
     // which is 1 ms, plus the configured allowable drift factor.
     const drift = Math.round((settings?.driftFactor ?? this.settings.driftFactor) * duration) + 2;
 
-    const replacement = new Lock(
-      this,
-      existing.resources,
-      existing.value,
-      attempts,
-      start + duration - drift,
+    return new Lock(
+        this,
+        existing.resources,
+        existing.value,
+        attempts,
+        start + duration - drift,
     );
-
-    return replacement;
   }
 
   /**
@@ -546,10 +541,7 @@ export class Redlock extends EventEmitter {
     // The AbortController/AbortSignal pattern allows the routine to be notified
     // of a failure to extend the lock, and subsequent expiration. In the event
     // of an abort, the error object will be made available at `signal.error`.
-    const controller =
-      typeof AbortController === 'undefined'
-        ? new PolyfillAbortController()
-        : new AbortController();
+    const controller= new AbortController();
 
     const signal = controller.signal as RedlockAbortSignal;
 
