@@ -21,10 +21,11 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     strategy:
       matrix:
-        node-version: [16, 18, 20]
+        node-version: [20]
 
     env:
       YARN_IGNORE_NODE: 1
@@ -64,6 +65,7 @@ jobs:
 
   publish-npm:
     needs: build
+    timeout-minutes: 5
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: write
