@@ -21,12 +21,6 @@ This is a Node.js implementation of the [redlock](http://redis.io/topics/distloc
 npm install --save @sesamecare-oss/redlock
 ```
 
-For Node.js v14 you should also install `node-abort-controller`
-
-```bash
-npm install --save node-abort-controller
-```
-
 ## Configuration
 
 Redlock is designed to use [ioredis](https://github.com/luin/ioredis) to keep its client connections and handle the cluster protocols.
@@ -35,7 +29,7 @@ A redlock object is instantiated with an array of at least one redis client and 
 
 ```ts
 import Client from "ioredis";
-import Redlock from "@sesamecare-oss/redlock";
+import { Redlock } from "@sesamecare-oss/redlock";
 
 const redisA = new Client({ host: "a.redis.example.com" });
 const redisB = new Client({ host: "b.redis.example.com" });
@@ -117,7 +111,7 @@ Beginning in version 5, this package is published primarily as an ECMAScript mod
 The `Redlock` class is published as the "default" export, and can be imported with:
 
 ```ts
-const { default: Redlock } = require("@sesamecare-oss/redlock");
+const { Redlock } = require("@sesamecare-oss/redlock");
 ```
 
 In version 6, this package will stop distributing the CommonJS version.
