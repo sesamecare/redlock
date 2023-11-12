@@ -113,6 +113,11 @@ export class Lock {
 
 export type RedlockAbortSignal = AbortSignal & { error?: Error };
 
+export interface RedlockUsingContext {
+  lock: Lock;
+  extensions: number;
+}
+
 /**
  * A redlock object is instantiated with an array of at least one redis client
  * and an optional `options` object. Properties of the Redlock object should NOT
@@ -279,13 +284,7 @@ export class Redlock extends EventEmitter {
     // which is 1 ms, plus the configured allowable drift factor.
     const drift = Math.round((settings?.driftFactor ?? this.settings.driftFactor) * duration) + 2;
 
-    return new Lock(
-        this,
-        existing.resources,
-        existing.value,
-        attempts,
-        start + duration - drift,
-    );
+    return new Lock(this, existing.resources, existing.value, attempts, start + duration - drift);
   }
 
   /**
@@ -500,20 +499,23 @@ export class Redlock extends EventEmitter {
     resources: string[],
     duration: number,
     settings: Partial<Settings>,
-    routine?: (signal: RedlockAbortSignal) => Promise<T>,
+    routine?: (signal: RedlockAbortSignal, context: RedlockUsingContext) => Promise<T>,
   ): Promise<T>;
 
   public async using<T>(
     resources: string[],
     duration: number,
-    routine: (signal: RedlockAbortSignal) => Promise<T>,
+    routine: (signal: RedlockAbortSignal, context: RedlockUsingContext) => Promise<T>,
   ): Promise<T>;
 
   public async using<T>(
     resources: string[],
     duration: number,
-    settingsOrRoutine: undefined | Partial<Settings> | ((signal: RedlockAbortSignal) => Promise<T>),
-    optionalRoutine?: (signal: RedlockAbortSignal) => Promise<T>,
+    settingsOrRoutine:
+      | undefined
+      | Partial<Settings>
+      | ((signal: RedlockAbortSignal, context: RedlockUsingContext) => Promise<T>),
+    optionalRoutine?: (signal: RedlockAbortSignal, context: RedlockUsingContext) => Promise<T>,
   ): Promise<T> {
     if (Math.floor(duration) !== duration) {
       throw new Error('Duration must be an integer value in milliseconds.');
@@ -541,14 +543,14 @@ export class Redlock extends EventEmitter {
     // The AbortController/AbortSignal pattern allows the routine to be notified
     // of a failure to extend the lock, and subsequent expiration. In the event
     // of an abort, the error object will be made available at `signal.error`.
-    const controller= new AbortController();
+    const controller = new AbortController();
 
     const signal = controller.signal as RedlockAbortSignal;
 
     function queue(): void {
       timeout = setTimeout(
         () => (extension = extend()),
-        lock.expiration - Date.now() - settings.automaticExtensionThreshold,
+        context.lock.expiration - Date.now() - settings.automaticExtensionThreshold,
       );
     }
 
@@ -556,14 +558,15 @@ export class Redlock extends EventEmitter {
       timeout = undefined;
 
       try {
-        lock = await lock.extend(duration);
+        context.lock = await context.lock.extend(duration);
+        context.extensions += 1;
         queue();
       } catch (error) {
         if (!(error instanceof Error)) {
           throw new Error(`Unexpected thrown ${typeof error}: ${error}.`);
         }
 
-        if (lock.expiration > Date.now()) {
+        if (context.lock.expiration > Date.now()) {
           return (extension = extend());
         }
 
@@ -574,11 +577,14 @@ export class Redlock extends EventEmitter {
 
     let timeout: undefined | NodeJS.Timeout;
     let extension: undefined | Promise<void>;
-    let lock = await this.acquire(resources, duration, settings);
+    const context: RedlockUsingContext = {
+      lock: await this.acquire(resources, duration, settings),
+      extensions: 0,
+    };
     queue();
 
     try {
-      return await routine(signal);
+      return await routine(signal, context);
     } finally {
       // Clean up the timer.
       if (timeout) {
@@ -596,7 +602,7 @@ export class Redlock extends EventEmitter {
         });
       }
 
-      await lock.release();
+      await context.lock.release();
     }
   }
 }

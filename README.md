@@ -67,10 +67,10 @@ const redlock = new Redlock(
 
 The `using` method wraps and executes a routine in the context of an auto-extending lock, returning a promise of the routine's value. In the case that auto-extension fails, an AbortSignal will be updated to indicate that abortion of the routine is in order, and to pass along the encountered error.
 
-The first parameter is an array of resources to lock; the second is the requested lock duration in milliseconds, which MUST NOT contain values after the decimal.
+The first parameter is an array of resources to lock; the second is the requested lock duration in milliseconds, which MUST NOT contain values after the decimal. The routine you provide receives the signal and a context object which reflects the current lock (which has other metadata) and a count of the number of extensions that have been acquired.
 
 ```ts
-await redlock.using([senderId, recipientId], 5000, async (signal) => {
+await redlock.using([senderId, recipientId], 5000, async (signal, context) => {
   // Do something...
   await something();
 
