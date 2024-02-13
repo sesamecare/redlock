@@ -1,0 +1,15 @@
+name: Ensure title contains JIRA ticket
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - edited
+jobs:
+  jira_ticket_in_title:
+    uses: sesamecare/github-actions/.github/workflows/jira-ticket-in-title.yml@main
+    secrets: inherit
