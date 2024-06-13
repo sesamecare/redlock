@@ -171,7 +171,7 @@ export class Redlock extends EventEmitter {
           ? settings.automaticExtensionThreshold
           : defaultSettings.automaticExtensionThreshold,
       db:
-        (typeof settings.db === 'number' && settings.db >= 0 && settings.db <= 15)
+        (typeof settings.db === 'number' && Number.isInteger(settings.db) && settings.db >= 0 && settings.db <= 15)
         // settings.db value must be a number and between 0 and 15, inclusive.
           ? settings.db
           : defaultSettings.db,
