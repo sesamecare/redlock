@@ -2,7 +2,14 @@ import { Redis as IORedisClient, Cluster as IORedisCluster, Result } from 'iored
 type Client = IORedisClient | IORedisCluster;
 
 // Define script constants.
+const DB_SELECT_SCRIPT = `
+  -- Protected call to execute SELECT command if supported
+  redis.pcall("SELECT", tonumber(ARGV[1]))
+`;
+
 const ACQUIRE_SCRIPT = `
+  ${DB_SELECT_SCRIPT}
+
   -- Return 0 if an entry already exists.
   for i, key in ipairs(KEYS) do
     if redis.call("exists", key) == 1 then
@@ -12,7 +19,7 @@ const ACQUIRE_SCRIPT = `
 
   -- Create an entry for each provided key.
   for i, key in ipairs(KEYS) do
-    redis.call("set", key, ARGV[1], "PX", ARGV[2])
+    redis.call("set", key, ARGV[2], "PX", ARGV[3])
   end
 
   -- Return the number of entries added.
@@ -20,16 +27,18 @@ const ACQUIRE_SCRIPT = `
 `;
 
 const EXTEND_SCRIPT = `
+  ${DB_SELECT_SCRIPT}
+
   -- Return 0 if an entry exists with a *different* lock value.
   for i, key in ipairs(KEYS) do
-    if redis.call("get", key) ~= ARGV[1] then
+    if redis.call("get", key) ~= ARGV[2] then
       return 0
     end
   end
 
   -- Update the entry for each provided key.
   for i, key in ipairs(KEYS) do
-    redis.call("set", key, ARGV[1], "PX", ARGV[2])
+    redis.call("set", key, ARGV[2], "PX", ARGV[3])
   end
 
   -- Return the number of entries updated.
@@ -37,10 +46,12 @@ const EXTEND_SCRIPT = `
 `;
 
 const RELEASE_SCRIPT = `
+  ${DB_SELECT_SCRIPT}
+
   local count = 0
   for i, key in ipairs(KEYS) do
     -- Only remove entries for *this* lock value.
-    if redis.call("get", key) == ARGV[1] then
+    if redis.call("get", key) == ARGV[2] then
       redis.pcall("del", key)
       count = count + 1
     end
