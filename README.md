@@ -28,12 +28,12 @@ Redlock is designed to use [ioredis](https://github.com/luin/ioredis) to keep it
 A redlock object is instantiated with an array of at least one redis client and an optional `options` object. Properties of the Redlock object should NOT be changed after it is first used, as doing so could have unintended consequences for live locks.
 
 ```ts
-import Client from "ioredis";
+import Redis from "ioredis";
 import { Redlock } from "@sesamecare-oss/redlock";
 
-const redisA = new Client({ host: "a.redis.example.com" });
-const redisB = new Client({ host: "b.redis.example.com" });
-const redisC = new Client({ host: "c.redis.example.com" });
+const redisA = new Redis({ host: "a.redis.example.com" });
+const redisB = new Redis({ host: "b.redis.example.com" });
+const redisC = new Redis({ host: "c.redis.example.com" });
 
 const redlock = new Redlock(
   // You should have one client for each independent redis node
@@ -145,6 +145,31 @@ Please view the (very concise) source code or TypeScript definitions for a detai
 ### Contributing
 
 Please see [`CONTRIBUTING.md`](./CONTRIBUTING.md) for information on developing, running, and testing this library.
+
+### Using a specific DB index
+
+If you're using only one `Redis` client, with only one redis instance which has cluster mode **disabled**, you can set a `db` property in the `options` configuration to specify the DB index in which to store the lock records. For example:
+
+```ts
+import Redis from "ioredis";
+import { Redlock } from "@sesamecare-oss/redlock";
+
+const redis = new Redis({ host: "a.redis.example.com" });
+
+const redlock = new Redlock(
+  [redis],
+  {
+    driftFactor: 0.01, // multiplied by lock ttl to determine drift time
+    retryCount: 10,
+    retryDelay: 200, // time in ms
+    retryJitter: 200, // time in ms
+    automaticExtensionThreshold: 500, // time in ms
+    db: 2 // DB to select and use for lock records
+  }
+);
+```
+
+Note that the `db` value is ignored for redis servers with cluster mode enabled. If a value outside of the range 0-15 is provided, the configuration defaults back to `0`.
 
 ### High-Availability Recommendations
 
