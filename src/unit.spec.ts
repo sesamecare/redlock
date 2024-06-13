@@ -1,7 +1,10 @@
-import Redis from 'ioredis';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { Redis } from 'ioredis';
+import { beforeAll, describe, expect, test, vi } from 'vitest';
 
 import { Redlock, Lock, ExecutionError, Settings } from './index';
+
+// Mock all resources from ioredis
+vi.mock('ioredis');
 
 describe('Redlock Settings', () => {
   test('Default settings are applied if none are provided', () => {
@@ -40,12 +43,14 @@ describe('Redlock Settings', () => {
     expect(redlock.settings.db).toBe(0);
   });
 
-  test.each([-1, 16, 0.5, 3.1514])('Redis DB defaults to 0 when value (%s) is outside of acceptable range (0-15)', (db: number) => {
-    const client = new Redis();
-    const redlock = new Redlock([client], { db });
-    expect(redlock.settings.db).toBe(0);
-  });
-
+  test.each([-1, 16, 0.5, 3.1514])(
+    'Redis DB defaults to 0 when value (%s) is outside of acceptable range (0-15)',
+    (db: number) => {
+      const client = new Redis();
+      const redlock = new Redlock([client], { db });
+      expect(redlock.settings.db).toBe(0);
+    },
+  );
 });
 
 describe('Redlock', () => {
@@ -59,16 +64,8 @@ describe('Redlock', () => {
     automaticExtensionThreshold: 500,
   };
 
-  beforeEach(() => {
-    redisClient = {
-      evalsha: vi.fn(),
-      get: vi.fn(),
-      set: vi.fn(),
-      quit: vi.fn(),
-      acquireLock: vi.fn(),
-      releaseLock: vi.fn(),
-      extendLock: vi.fn()
-    } as Redis;
+  beforeAll(() => {
+    redisClient = new Redis();
     redlock = new Redlock([redisClient], defaultSettings);
   });
 
