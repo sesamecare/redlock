@@ -12,7 +12,9 @@
     "clean": "yarn dlx rimraf ./dist",
     "lint": "eslint .",
     "postinstall": "coconfig",
-    "test": "vitest"
+    "test": "vitest",
+    "test:unit": "vitest unit.spec.ts",
+    "test:system": "vitest system.spec.ts"
   },
   "keywords": [
     "typescript",

@@ -50,6 +50,7 @@ export interface Settings {
   readonly retryDelay: number;
   readonly retryJitter: number;
   readonly automaticExtensionThreshold: number;
+  readonly db: number;
 }
 
 // Define default settings.
@@ -59,6 +60,7 @@ const defaultSettings: Readonly<Settings> = {
   retryDelay: 200,
   retryJitter: 100,
   automaticExtensionThreshold: 500,
+  db: 0
 };
 
 // Modifyng this object is forbidden.
@@ -168,6 +170,11 @@ export class Redlock extends EventEmitter {
         typeof settings.automaticExtensionThreshold === 'number'
           ? settings.automaticExtensionThreshold
           : defaultSettings.automaticExtensionThreshold,
+      db:
+        (typeof settings.db === 'number' && Number.isInteger(settings.db) && settings.db >= 0 && settings.db <= 15)
+        // settings.db value must be a number and between 0 and 15, inclusive.
+          ? settings.db
+          : defaultSettings.db,
     };
   }
 
@@ -216,7 +223,7 @@ export class Redlock extends EventEmitter {
       const { attempts, start } = await this._execute(
         'acquireLock',
         resources,
-        [value, duration],
+        [this.settings.db, value, duration],
         settings,
       );
 
@@ -228,7 +235,7 @@ export class Redlock extends EventEmitter {
     } catch (error) {
       // If there was an error acquiring the lock, release any partial lock
       // state that may exist on a minority of clients.
-      await this._execute('releaseLock', resources, [value], {
+      await this._execute('releaseLock', resources, [this.settings.db, value], {
         retryCount: 0,
       }).catch(() => {
         // Any error here will be ignored.
@@ -250,7 +257,7 @@ export class Redlock extends EventEmitter {
     lock.expiration = 0;
 
     // Attempt to release the lock.
-    return this._execute('releaseLock', lock.resources, [lock.value], settings);
+    return this._execute('releaseLock', lock.resources, [this.settings.db, lock.value], settings);
   }
 
   /**
@@ -273,7 +280,7 @@ export class Redlock extends EventEmitter {
     const { attempts, start } = await this._execute(
       'extendLock',
       existing.resources,
-      [existing.value, duration],
+      [this.settings.db, existing.value, duration],
       settings,
     );
 

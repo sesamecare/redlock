@@ -37,22 +37,27 @@ function is<T>(actual: T, expected: T, message?: string): void {
 }
 
 describe.each([
-  { type: 'instance' },
-  { type: 'cluster' },
-])('$type', ({ type }) => {
+  { type: 'instance' }, // Defaults to db 0
+  { type: 'instance', db: 2 }, // Test using db 2
+  { type: 'cluster' }, // DB select not supported in cluster mode
+])('$type', ({ type, db = 0 }) => {
   const redis =
     type === 'instance'
       ? new Redis({ host: 'redis-single-instance' })
       : new Cluster([{ host: 'redis-single-cluster-1' }]);
 
   beforeEach(async () => {
-    await (redis instanceof Cluster && redis.isCluster ? waitForCluster(redis) : null);
+    if (redis instanceof Cluster && redis.isCluster) {
+        await waitForCluster(redis);
+    } else {
+        await redis.select(db);
+    }
     await redis.keys('*').then((keys) => (keys?.length ? redis.del(keys) : null));
   });
 
-  test(`${type} - refuses to use a non-integer duration`, async () => {
+  test(`${type} - db ${db} - refuses to use a non-integer duration`, async () => {
     try {
-      const redlock = new Redlock([redis]);
+      const redlock = new Redlock([redis], { db });
       const duration = Number.MAX_SAFE_INTEGER / 10;
 
       // Acquire a lock.
@@ -64,8 +69,8 @@ describe.each([
     }
   });
 
-  test(`${type} - acquires, extends, and releases a single lock`, async () => {
-    const redlock = new Redlock([redis]);
+  test(`${type} - db ${db} - acquires, extends, and releases a single lock`, async () => {
+    const redlock = new Redlock([redis], { db });
 
     const duration = Math.floor(Number.MAX_SAFE_INTEGER / 10);
 
@@ -90,8 +95,8 @@ describe.each([
     expect(await redis.get('{redlock}a')).toBeNull();
   });
 
-  test(`${type} - acquires, extends, and releases a multi-resource lock`, async () => {
-    const redlock = new Redlock([redis]);
+  test(`${type} - db ${db} - acquires, extends, and releases a multi-resource lock`, async () => {
+    const redlock = new Redlock([redis], { db });
 
     const duration = Math.floor(Number.MAX_SAFE_INTEGER / 10);
 
@@ -131,7 +136,7 @@ describe.each([
     is(await redis.get('{redlock}a2'), null);
   });
 
-  test(`${type} - locks fail when redis is unreachable`, async () => {
+  test(`${type} - db ${db} - locks fail when redis is unreachable`, async () => {
     const redis = new Redis({
       host: '127.0.0.1',
       port: 6380,
@@ -146,7 +151,7 @@ describe.each([
       // ignore redis-generated errors
     });
 
-    const redlock = new Redlock([redis]);
+    const redlock = new Redlock([redis], { db });
 
     const duration = Math.floor(Number.MAX_SAFE_INTEGER / 10);
     try {
@@ -174,8 +179,8 @@ describe.each([
     }
   });
 
-  test(`${type} - locks automatically expire`, async () => {
-    const redlock = new Redlock([redis]);
+  test(`${type} - db ${db} - locks automatically expire`, async () => {
+    const redlock = new Redlock([redis], { db });
 
     const duration = 200;
 
@@ -195,8 +200,8 @@ describe.each([
     is(await redis.get('{redlock}d'), null);
   });
 
-  test(`${type} - individual locks are exclusive`, async () => {
-    const redlock = new Redlock([redis]);
+  test(`${type} - db ${db} - individual locks are exclusive`, async () => {
+    const redlock = new Redlock([redis], { db });
 
     const duration = Math.floor(Number.MAX_SAFE_INTEGER / 10);
 
@@ -241,8 +246,8 @@ describe.each([
     is(await redis.get('{redlock}c'), null);
   });
 
-  test(`${type} - overlapping multi-locks are exclusive`, async () => {
-    const redlock = new Redlock([redis]);
+  test(`${type} - db ${db} - overlapping multi-locks are exclusive`, async () => {
+    const redlock = new Redlock([redis], { db });
 
     const duration = Math.floor(Number.MAX_SAFE_INTEGER / 10);
 
@@ -307,8 +312,8 @@ describe.each([
     is(await redis.get('{redlock}c3'), null);
   });
 
-  test(`${type} - the \`using\` helper acquires, extends, and releases locks`, async () => {
-    const redlock = new Redlock([redis]);
+  test(`${type} - db ${db} - the \`using\` helper acquires, extends, and releases locks`, async () => {
+    const redlock = new Redlock([redis], { db });
 
     const duration = 500;
 
@@ -339,8 +344,8 @@ describe.each([
     is(await redis.get('{redlock}x'), null, 'The lock was not released.');
   });
 
-  test(`${type} - the \`using\` helper is exclusive`, async () => {
-    const redlock = new Redlock([redis]);
+  test(`${type} - db ${db} - the \`using\` helper is exclusive`, async () => {
+    const redlock = new Redlock([redis], { db });
 
     const duration = 500;
 
