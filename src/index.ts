@@ -45,16 +45,16 @@ export type ExecutionResult = {
  *
  */
 export interface Settings {
-  readonly driftFactor: number;
-  readonly retryCount: number;
-  readonly retryDelay: number;
-  readonly retryJitter: number;
-  readonly automaticExtensionThreshold: number;
-  readonly db: number;
+  readonly driftFactor?: number;
+  readonly retryCount?: number;
+  readonly retryDelay?: number;
+  readonly retryJitter?: number;
+  readonly automaticExtensionThreshold?: number;
+  readonly db?: number;
 }
 
 // Define default settings.
-const defaultSettings: Readonly<Settings> = {
+const defaultSettings: Readonly<Required<Settings>> = {
   driftFactor: 0.01,
   retryCount: 10,
   retryDelay: 200,
@@ -128,9 +128,9 @@ export interface RedlockUsingContext {
  */
 export class Redlock extends EventEmitter {
   public readonly clients: Set<Client>;
-  public readonly settings: Settings;
+  public readonly settings: Required<Settings>;
 
-  public constructor(clients: Iterable<Client>, settings: Partial<Settings> = {}) {
+  public constructor(clients: Iterable<Client>, settings: Settings = {}) {
     super();
 
     // Prevent crashes on error events.
