@@ -102,6 +102,7 @@ export class Lock {
     public readonly value: string,
     public readonly attempts: ReadonlyArray<Promise<ExecutionStats>>,
     public expiration: number,
+    public readonly settings?: Partial<Settings>,
   ) {}
 
   async release(): Promise<ExecutionResult> {
@@ -109,7 +110,7 @@ export class Lock {
   }
 
   async extend(duration: number): Promise<Lock> {
-    return this.redlock.extend(this, duration);
+    return this.redlock.extend(this, duration, this.settings);
   }
 }
 
@@ -231,7 +232,7 @@ export class Redlock extends EventEmitter {
       // which is 1 ms, plus the configured allowable drift factor.
       const drift = Math.round((settings?.driftFactor ?? this.settings.driftFactor) * duration) + 2;
 
-      return new Lock(this, resources, value, attempts, start + duration - drift);
+      return new Lock(this, resources, value, attempts, start + duration - drift, settings);
     } catch (error) {
       // If there was an error acquiring the lock, release any partial lock
       // state that may exist on a minority of clients.
@@ -291,7 +292,7 @@ export class Redlock extends EventEmitter {
     // which is 1 ms, plus the configured allowable drift factor.
     const drift = Math.round((settings?.driftFactor ?? this.settings.driftFactor) * duration) + 2;
 
-    return new Lock(this, existing.resources, existing.value, attempts, start + duration - drift);
+    return new Lock(this, existing.resources, existing.value, attempts, start + duration - drift, settings);
   }
 
   /**
