@@ -2,6 +2,35 @@
 [![Current Version](https://badgen.net/npm/v/@sesamecare-oss/redlock)](https://npm.im/@sesamecare-oss/redlock)
 [![Supported Node.js Versions](https://badgen.net/npm/node/@sesamecare-oss/redlock)](https://npm.im/@sesamecare-oss/redlock)
 
+# ⚠️ Notice: Module Superseded
+
+This module has been **superseded** by [`redlock-universal`](https://www.npmjs.com/package/redlock-universal).
+
+## What this means
+
+Active development, fixes, and improvements have moved to `redlock-universal`.  
+This package is no longer the recommended implementation.
+
+## What you should do
+
+Please migrate to:
+
+👉 **https://www.npmjs.com/package/redlock-universal**
+
+I strongly recommend that all existing users transition to `redlock-universal` as soon as practical.
+
+## Status
+
+- No new features will be added here.
+- Bug fixes will be limited or nonexistent.
+- Security updates are not guaranteed.
+
+If you're starting something new, do **not** use this package — use `redlock-universal` instead.
+
+---
+
+Thank you to everyone who has used and contributed to this project.
+
 # Redlock
 
 This is a Node.js implementation of the [redlock](http://redis.io/topics/distlock) algorithm for distributed redis locks. It provides strong guarantees in both single-redis and multi-redis environments, and provides fault tolerance through use of multiple independent redis instances or clusters.
